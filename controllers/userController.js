@@ -1,19 +1,10 @@
 const createError = require('http-errors');
 const Users = require('../models/users');
-const {
-  userGet,
-  userCreate,
-  userUpdate,
-  userDelete,
-} = require('../validations/user');
 
 class userController {
   get(req, res) {
     try {
       if (typeof req.params.id !== 'undefined') {
-        const { error } = userGet(req.params);
-        if (error) throw new Error(error);
-
         const user = Users.findOne(req.params.id);
         if (user) {
           res.json({ result: 'success', data: user });
@@ -32,27 +23,22 @@ class userController {
 
   create(req, res) {
     try {
-      if (typeof req.body !== 'undefined') {
-        const { error } = userCreate(req.body);
-        if (error) throw new Error(error);
+      const { users } = JSON.parse(Users.find());
 
-        const { users } = JSON.parse(Users.find());
+      /**
+       * получим следующий id, который присвоим новой записи.
+       * В боевых условиях можно было бы генерировать uuid, но в данном случае используем числовой id, чтобы
+       * можно было использовать его в get-запросах для получения конкретной записи пользователя
+       */
+      const ids = users.map((a) => a.id);
+      req.body.id = ids.length ? Math.max.apply(null, ids) + 1 : 1;
 
-        /**
-         * получим следующий id, который присвоим новой записи.
-         * В боевых условиях можно было бы генерировать uuid, но в данном случае используем числовой id, чтобы
-         * можно было использовать его в get-запросах для получения конкретной записи пользователя
-         */
-        const ids = users.map((a) => a.id);
-        req.body.id = ids.length ? Math.max.apply(null, ids) + 1 : 1;
-
-        if (Users.save(users, req.body)) {
-          res.status(201).json({
-            result: 'success',
-            message: 'User created',
-            data: JSON.parse(Users.find()),
-          });
-        }
+      if (Users.save(users, req.body)) {
+        res.status(201).json({
+          result: 'success',
+          message: 'User created',
+          data: JSON.parse(Users.find()),
+        });
       }
     } catch (e) {
       throw createError(400, e.toString());
@@ -61,9 +47,6 @@ class userController {
 
   update(req, res) {
     try {
-      const { error } = userUpdate(req);
-      if (error) throw new Error(error);
-
       const { users } = JSON.parse(Users.find());
 
       if (users.some((a) => a.id === +req.params.id) === false) {
@@ -103,27 +86,18 @@ class userController {
 
   delete(req, res) {
     try {
-      if (typeof req.params.id !== 'undefined') {
-        const { error } = userDelete(req.params);
-        if (error) {
-          throw new Error(error);
-        }
+      let { users } = JSON.parse(Users.find());
 
-        let { users } = JSON.parse(Users.find());
+      if (users.some((a) => a.id === +req.params.id) === false) throw 404;
 
-        if (users.some((a) => a.id === +req.params.id) === false) {
-          throw 404;
-        }
+      users = Users.delete(users, req.params.id);
 
-        users = Users.delete(users, req.params.id);
-
-        if (Users.save(users)) {
-          res.json({
-            result: 'success',
-            message: 'User deleted',
-            data: JSON.parse(Users.find()),
-          });
-        }
+      if (Users.save(users)) {
+        res.json({
+          result: 'success',
+          message: 'User deleted',
+          data: JSON.parse(Users.find()),
+        });
       }
     } catch (e) {
       if (e === 404) {
