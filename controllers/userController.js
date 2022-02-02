@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const Users = require('../models/users');
+// const User = require('../models/User');
 
 class userController {
   get(req, res) {
