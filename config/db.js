@@ -1,17 +1,15 @@
-const { Sequelize, DataTypes } = require('sequelize');
+require('dotenv').config();
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASS,
-  {
+/*
+ * Settings for migrations
+ * */
+module.exports = {
+  development: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: process.env.DB_DRIVER,
   },
-);
-
-module.exports = {
-  sequelize,
-  DataTypes,
 };
