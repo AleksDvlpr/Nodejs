@@ -69,7 +69,20 @@ module.exports = (sequelize, DataTypes) => {
     {
       sequelize,
       modelName: 'User',
+      hooks: {
+        beforeFind(instance, options) {
+          console.log('beforeFind1');
+        },
+      },
     },
   );
+
+  User.addHook('beforeFind', (user, options) => {
+    console.log('beforeFind2');
+  });
+
+  User.afterFind(async (user, options) => {
+    console.log('afterFind');
+  });
   return User;
 };

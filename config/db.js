@@ -11,5 +11,13 @@ module.exports = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: process.env.DB_DRIVER,
+    define: {
+      // определение глобальных хуков
+      hooks: {
+        beforeFind() {
+          console.log('Global hook');
+        },
+      },
+    },
   },
 };
