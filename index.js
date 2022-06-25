@@ -2,13 +2,16 @@ const express = require('express');
 const path = require('path');
 const createError = require('http-errors');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 const usersRoutes = require('./routes/users');
 const upload = require('./middleware/uploads');
+
+mongoose.connect('mongodb://localhost:27017/my_test_db');
 
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/api', usersRoutes);
+app.use('/api/v1', usersRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

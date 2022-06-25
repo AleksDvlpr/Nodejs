@@ -1,22 +1,22 @@
 const createError = require('http-errors');
-const { User } = require('../models/index');
+const User = require('../models/user');
 
 class userController {
   async get(req, res) {
     try {
       if (typeof req.params.id !== 'undefined') {
-        const user = await User.getUser(req.params.id);
+        const user = await User.find({ _id: req.params.id }).exec();
 
         if (user.length) {
-          res.json({ result: 'success', data: user });
-          return;
+          return res.json({ result: 'success', data: user });
         }
 
-        res.status(404).json({ result: 'fail', message: 'User not found' });
-        return;
+        return res
+          .status(404)
+          .json({ result: 'fail', message: 'User not found' });
       }
 
-      res.json({ result: 'success', data: await User.findAll() });
+      return res.json({ result: 'success', data: await User.find().exec() });
     } catch (e) {
       throw createError(400, e.toString());
     }
@@ -24,7 +24,13 @@ class userController {
 
   async create(req, res) {
     try {
-      const user = await User.createUser(req.body);
+      const data = req.body;
+
+      const user = await User.create({
+        name: data.name,
+        age: data.age,
+        profession: data.profession,
+      });
 
       res.status(201).json({
         result: 'success',
@@ -38,42 +44,44 @@ class userController {
 
   async update(req, res) {
     try {
-      let user = await User.getUserByPk(req.params.id);
+      const user = await User.findOne({ _id: req.params.id }).exec();
 
-      user = await User.updateUser(user, req.body);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ result: 'fail', message: 'User not found' });
+      }
 
-      res.status(201).json({
+      await user.updateUser(req.body);
+
+      return res.status(200).json({
         result: 'success',
         message: 'User data updated',
         data: user,
       });
     } catch (e) {
-      if (e === 404) {
-        res.status(404).json({ result: 'fail', message: 'User not found' });
-        return;
-      }
-
-      res.status(400).json({ result: 'fail', message: e.toString() });
+      return res.status(400).json({ result: 'fail', message: e.toString() });
     }
   }
 
   async delete(req, res) {
     try {
-      const user = await User.getUserByPk(req.params.id);
+      const user = await User.findOne({ _id: req.params.id }).exec();
 
-      await user.destroy();
+      if (!user) {
+        return res
+          .status(404)
+          .json({ result: 'fail', message: 'User not found' });
+      }
 
-      res.json({
+      await user.remove();
+
+      return res.json({
         result: 'success',
         message: 'User deleted',
       });
     } catch (e) {
-      if (e === 404) {
-        res.status(404).json({ result: 'fail', message: 'User not found' });
-        return;
-      }
-
-      res.status(400).json({ result: 'fail', message: e.toString() });
+      return res.status(400).json({ result: 'fail', message: e.toString() });
     }
   }
 }

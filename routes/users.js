@@ -11,7 +11,6 @@ const router = express.Router();
 
 router.get(['/users', '/users/:id'], userGetValidate, userController.get);
 router.post('/users', userPostValidate, userController.create);
-router.put('/users/:id', userUpdateValidate, userController.update);
 router.patch('/users/:id', userUpdateValidate, userController.update);
 router.delete('/users/:id', userDeleteValidate, userController.delete);
 

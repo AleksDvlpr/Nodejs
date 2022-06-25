@@ -1,88 +1,19 @@
-'use strict';
-const { Model } = require('sequelize');
-module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) {
-      // define association here
-    }
+const mongoose = require('mongoose');
 
-    static async getUser(id) {
-      const user = await User.findAll({
-        where: {
-          id,
-        },
-      });
+const schema = new mongoose.Schema({
+  name: String,
+  age: Number,
+  profession: String,
+});
 
-      return user;
-    }
-
-    static async updateUser(user, data) {
-      await user.set({
-        name: data.name || user.name,
-        age: data.age || user.age,
-        profession: data.profession || user.profession,
-      });
-
-      const userData = await user.save();
-
-      return userData;
-    }
-
-    static async getUserByPk(id) {
-      const user = await User.findByPk(id);
-
-      if (user === null) {
-        throw 404;
-      }
-
-      return user;
-    }
-
-    static async createUser(data) {
-      const t = await sequelize.transaction();
-
-      const user = await User.create(
-        {
-          name: data.name,
-          age: data.age,
-          profession: data.profession,
-        },
-        { transaction: t },
-      );
-
-      await t.commit();
-
-      return user;
-    }
-  }
-  User.init(
-    {
-      name: DataTypes.STRING,
-      age: DataTypes.INTEGER,
-      profession: DataTypes.STRING,
-    },
-    {
-      sequelize,
-      modelName: 'User',
-      hooks: {
-        beforeFind(instance, options) {
-          console.log('beforeFind1');
-        },
-      },
-    },
-  );
-
-  User.addHook('beforeFind', (user, options) => {
-    console.log('beforeFind2');
-  });
-
-  User.afterFind(async (user, options) => {
-    console.log('afterFind');
-  });
-  return User;
+// eslint-disable-next-line func-names
+schema.methods.updateUser = async function (data) {
+  this.name = data.name || this.name;
+  this.age = data.age || this.age;
+  this.profession = data.profession || this.profession;
+  this.save();
 };
+
+const User = mongoose.model('User', schema);
+
+module.exports = User;
