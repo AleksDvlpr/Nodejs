@@ -4,6 +4,7 @@ const createError = require('http-errors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const usersRoutes = require('./routes/users');
+const projectsRoutes = require('./routes/projects');
 const upload = require('./middleware/uploads');
 
 mongoose.connect('mongodb://localhost:27017/my_test_db');
@@ -11,7 +12,7 @@ mongoose.connect('mongodb://localhost:27017/my_test_db');
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/api/v1', usersRoutes);
+app.use('/api/v1', usersRoutes, projectsRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
