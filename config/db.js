@@ -6,3 +6,7 @@ async function main() {
 }
 
 main().catch((err) => console.log(err));
+
+mongoose.connection.on('error', (err) => {
+  console.log(err);
+});
